@@ -4,36 +4,6 @@ import random
 import numpy as np
 import cv2
 
-'''
-一般画像からtensorflowの学習用のデータセットを作成するプログラム．
-画像データは全て，numpy.ndarray形式で返される．
-'''
-def _save_label( labels , save_path = "label.txt"):
-    '''
-    ラベルデータをテキストに保存
-    '''
-    f = open(save_path, 'w')
-    f.writelines(labels)
-    f.close()
-
-
-def _random_clip(img , clip_size , num = 1):
-    '''
-    画像をランダムの位置で切り抜くプログラム
-    '''
-    clip_images = []
-    height, width = img.shape[:2]
-
-    # 画像をclip_sizeサイズごとにnum回切り抜く
-    for y in range( num ):
-        rand_y = random.randint(0,height - clip_size)
-        rand_x = random.randint(0,width - clip_size)
-        clip_img = img[ rand_y : rand_y + clip_size, rand_x : rand_x + clip_size]
-        clip_img = clip_img.flatten().astype(np.float32)/255.0
-        clip_images.append(clip_img)
-
-    return clip_images
-
 
 def _harf_separate(img,img_size):
     '''
@@ -91,7 +61,7 @@ def _random_3sampling(*args,train_num,test_num = 0  ):
         return train_ary,test_ary
 
 
-def make( folder_name , separate=False ,gray = False , img_size = 0 ,train_num = 0 , test_num = 0, clip_num = 0 , clip_size = 0):
+def make( folder_name ,gray = False , img_size = 0 ,train_num = 0 , test_num = 0):
     '''
     画像フォルダを読み込む
     ---
@@ -138,33 +108,12 @@ def make( folder_name , separate=False ,gray = False , img_size = 0 ,train_num =
             # one_hot_vectorを作りラベルとして追加
             label = np.zeros(len(classes))
             label[i] = 1
-            # 画像を分割するとき
-            if separate:
-                source_image,target_image =_harf_separate(img,img_size)
-                if gray:#グレイスケールに変換
-                    source_image = cv2.cvtColor(source_image, cv2.COLOR_BGR2GRAY)
-                    target_image = cv2.cvtColor(target_image, cv2.COLOR_BGR2GRAY)
-
-                source_image = source_image.flatten().astype(np.float32)/255.0
-                target_image = target_image.flatten().astype(np.float32)/255.0
-
-                train_images.append( source_image )
-                target_images.append( target_image )
-                train_labels.append( label )
-                continue
 
             if gray:#グレイスケールに変換
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-            # ランダム位置でクリップを行うとき．
-            if clip_size != 0 and clip_num != 0:
-                img = _random_clip( img , clip_size , clip_num)
-                tmp_image.extend( img )
-                for j in range(clip_num):
-                    tmp_label.append(label)
-            else:# ランダムクリップをしないときは，リサイズをして保存
-                if img_size != 0:# リサイズをする．
-                    img = cv2.resize( img , (img_size , img_size ))
+            if img_size != 0:# リサイズをする．
+                img = cv2.resize( img , (img_size , img_size ))
 
             img = img.flatten().astype(np.float32)/255.0
             tmp_image.append(img)
@@ -175,19 +124,9 @@ def make( folder_name , separate=False ,gray = False , img_size = 0 ,train_num =
         labels += "label,{0},name,{1}".format(i , d)+"\n"
         print('[LOADING]\tLabel' + str(i) + '\tName:' + d + '\tPictures exit. Unit On '+ str(j))
 
-    _save_label(labels,save_path=folder_name+'/../label.txt')
-
-    if separate:
-        if test_num != 0 :
-            train_batch,test_batch = _random_3sampling( train_images , target_images ,train_labels, train_num=train_num , test_num =test_num )
-            return train_batch[0],train_batch[1],train_batch[2],test_batch[0],test_batch[1],test_batch[2]
-        else:
-            train_batch = _random_3sampling( train_images , target_images ,train_labels, train_num=train_num )
-            return train_batch[0],train_batch[1],train_batch[2]
+    if test_num != 0 :
+        train_batch,test_batch = _random_3sampling( train_images , train_labels ,train_num=train_num , test_num =test_num )
+        return train_batch[0],train_batch[1],test_batch[0],test_batch[1]
     else:
-        if test_num != 0 :
-            train_batch,test_batch = _random_3sampling( train_images , train_labels ,train_num=train_num , test_num =test_num )
-            return train_batch[0],train_batch[1],test_batch[0],test_batch[1]
-        else:
-            train_batch = _random_3sampling( train_images , train_labels ,train_num=train_num )
-            return train_batch[0],train_batch[1]
+        train_batch = _random_3sampling( train_images , train_labels ,train_num=train_num )
+        return train_batch[0],train_batch[1]
