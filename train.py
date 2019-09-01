@@ -6,6 +6,7 @@ from batchgen import *
 # Ganモデルの読み込み
 sys.path.append('./models')
 from gan import *
+from cGAN import *
 
 
 '''
@@ -28,6 +29,7 @@ def main(FLAGS):
     channel = 1 if gray else 3
 
     # GANのクラスに関するパラメータ
+    type = FLAGS.type
     layers = [64 , 128 , 256]
     max_epoch = FLAGS.max_epoch
     batch_num = FLAGS.batch_size
@@ -44,23 +46,27 @@ def main(FLAGS):
 
 
     '''モデルの作成'''
-    print("[LOADING]\tGAN")
-    gan = GAN(           input_size=resize,
-                         channel = channel,
-                         layers = layers,
-                         batch_num = batch_num ,
-                         max_epoch = max_epoch ,
-                         save_folder = save_path)
+    if type == 'gan':
+        print("[LOADING]\tGAN")
+        gan = GAN(  input_size = resize,
+                    channel = channel,
+                    layers = layers,
+                    batch_num = batch_num ,
+                    max_epoch = max_epoch ,
+                    save_folder = save_path)
+    elif type == 'cgan':
+        label_num = len(train_label[0])
+        print("[LOADING]\tConditional GAN")
+        gan = cGAN( input_size = resize,
+                    label_num = label_num,
+                    channel = channel,
+                    layers = layers,
+                    batch_num = batch_num ,
+                    max_epoch = max_epoch ,
+                    save_folder = save_path)
 
     # 学習の開始
     gan.train( batch )
-
-    # 最後にパラメータを保存
-    opt.save_param(
-            type = FLAGS.type,
-            folder=folder,
-            file_num=file_num,
-            save_folder=gan.save_folder)
 
 
 if __name__=="__main__":
