@@ -1,7 +1,7 @@
 import logging
 
 import tensorflow as tf
-import common.tfv1.layer.opts as opts
+import common.layer.opts as opts
 
 
 def deconv2d(

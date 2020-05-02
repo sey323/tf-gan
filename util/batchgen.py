@@ -1,24 +1,26 @@
 import numpy as np
 import math
 
-'''
-バッチを生成するクラス．
-'''
+
 class batchgen(object):
-    def __init__( self , image , label , size = None ,channel = 3 , label_num = None ,labeltype = 'onehot'):
+    """
+    バッチを生成するクラス．
+    """
+
+    def __init__(self, image, label, size=None, channel=3, label_num=None):
         if size is None:
-            width = int(math.sqrt(len(image[0])/channel))
-            height = int(math.sqrt(len(image[0])/channel))
-            size = [ width , height ]
+            width = int(math.sqrt(len(image[0]) / channel))
+            height = int(math.sqrt(len(image[0]) / channel))
+            size = [width, height]
 
         self.size = size
         self.channel = channel
         self.image = np.array(self._image2tensor(image))
         self.img_num = len(self.image)
 
-        if isinstance(label,int) and label_num is not None:
-            self.label = self._label_gen(label,label_num)
-        else :
+        if isinstance(label, int) and label_num is not None:
+            self.label = self._label_gen(label, label_num)
+        else:
             self.label = label
 
         # 乱数のindex
@@ -27,54 +29,33 @@ class batchgen(object):
         # バッチのスタート位置
         self.start_idx = 0
         self.end_idx = 0
-
         self.epoch = 0
 
-        # onehotじゃない時の処理
-        if labeltype == 'onehot':
-            self.label = np.array(self.label)
-        else:
-            self._onehot2array()
+        self.label = np.array(self.label)
 
-
-    def _image2tensor( self , img ):
-        '''
+    def _image2tensor(self, img):
+        """
         画像をtensorflowで学習可能な形式に変換．
-        '''
-        tensor = np.reshape(img,[len(img),self.size[0],self.size[1],self.channel])
+        """
+        tensor = np.reshape(img, [len(img), self.size[0], self.size[1], self.channel])
         return tensor
 
-
-    def _onehot2array( self ):
-        '''
-        one-hot表現された配列を，ラベル付き配列に戻す．
-        [ 0 , 0 , 1 ]→[ 3 ]
-        '''
-        onehot = self.label.tolist()
-        array = []
-        for o in onehot:
-            index = o.index( 1 )
-            array.append( index )
-        self.label = np.array(array)
-
-
-    def _label_gen( self , label_idx , label_num ):
-        '''
+    def _label_gen(self, label_idx, label_num):
+        """
         onehot形式のラベルを生成する
-        '''
-        label_onehot = np.full(self.img_num,label_idx)
-        labels=np.identity(label_num)[label_onehot]
+        """
+        label_onehot = np.full(self.img_num, label_idx)
+        labels = np.identity(label_num)[label_onehot]
         return labels
 
-
-    def getBatch( self , batch_num , idx = None):
-        '''
+    def getBatch(self, batch_num, idx=None):
+        """
         画像とラベルをバッチサイズ分取得する．
         ---
         Parameters
             tensor  : numpy.ndarray
             label   : numpy.ndarray
-        '''
+        """
         self.end_idx = self.start_idx + batch_num
         # 終了位置か判定
         if self.end_idx > len(self.image):
@@ -87,50 +68,48 @@ class batchgen(object):
                 self.shuffle(idx)
 
         # normalized to -0.5 ~ +0.5
-        tensor,label = self.image[self.start_idx:self.end_idx],self.label[self.start_idx:self.end_idx]
-        tensor = (tensor-0.5)/1.0
+        tensor, label = (
+            self.image[self.start_idx : self.end_idx],
+            self.label[self.start_idx : self.end_idx],
+        )
+        tensor = (tensor - 0.5) / 1.0
 
         self.start_idx += batch_num
-        return tensor , label
+        return tensor, label
 
-
-    def shuffle(self,idx = None):
-        '''
+    def shuffle(self, idx=None):
+        """
         ラベルと画像を同じ乱数で並び替える．
-        '''
+        """
         # 乱数シードが設定されていない時
         if idx is None:
             idx = np.random.permutation(len(self.image))
 
         self.image = self.image[idx]
         self.label = self.label[idx]
-       
+
         self.idx = idx
 
-
     def getAll(self):
-        '''
+        """
         全てのラベルと画像を取得
-        '''
-        return self.image,self.label
+        """
+        return self.image, self.label
 
-
-    def getIndex( self ):
-        '''
+    def getIndex(self):
+        """
         シャッフルした乱数のindexを返す．
-        '''
+        """
         return self.idx
 
-
     def getNum(self):
-        '''
+        """
         バッチ内の画像のサイズを返す
-        '''
+        """
         return len(self.image)
 
-
     def getEpoch(self):
-        '''
+        """
         現在のEpochを返す．
-        '''
+        """
         return self.epoch

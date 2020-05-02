@@ -1,21 +1,21 @@
 import logging
 
 import tensorflow as tf
-import common.tfv1.layer.opts as opts
+import common.layer.opts as opts
 
 
-def deconv2d(
+def conv2d(
     input,
     stride,
     filter_size,
-    output_shape,
     output_dim=None,
-    batch_norm=False,
+    padding="SAME",
+    batch_norm=True,
     save=False,
     name=None,
 ):
     """
-    逆畳み込み層(Fractionally-strided Convolution)
+    畳み込み(Convolution)
 
     Args:
         input (tensor):
@@ -23,10 +23,9 @@ def deconv2d(
             処理をするストライドのサイズ
         filter_size ([int,int]):
             畳み込みフィルタのサイズ
-        output_shape ([int,int]):
-            出力する特徴量の縦横のサイズ
         output_dim (int):
             出力する特徴次元のサイズ
+        padding:
         batch_norm (boolean):
             Batch Normalizationを適応するかどうか
         save (boolean):
@@ -40,40 +39,34 @@ def deconv2d(
         logging.warning("No Layer Name")
         exit()
 
-    input_dim = input.get_shape()[-1]
-    deconv_w, deconv_b = _deconv_variable(
+    input_dim = input.shape[-1]
+    conv_w, conv_b = _conv_variable(
         [filter_size[0], filter_size[1], input_dim, output_dim], name=layer_name,
     )
-    output_shape = tf.stack(
-        [tf.shape(input)[0], output_shape[0], output_shape[1], output_dim,],
-    )
-    deconv = (
-        tf.nn.conv2d_transpose(
-            input,
-            deconv_w,
-            output_shape=output_shape,
-            strides=[1, stride, stride, 1],
-            padding="SAME",
-            data_format="NHWC",
+    conv = (
+        tf.nn.conv2d(
+            input=input,  # 入力
+            filters=conv_w,  # 畳み込みフィルタ
+            strides=[1, stride, stride, 1],  # ストライド
+            padding=padding,
         )
-        + deconv_b
+        + conv_b
     )
     if save:
-        tf.compat.v1.summary.histogram(layer_name, deconv)
+        tf.compat.v1.summary.histogram(layer_name, conv)
     if batch_norm:
-        deconv = opts.batch_norm(deconv)
-    logging.info("[Layer]\tDe Convolution:{}".format(deconv))
-    return deconv
+        conv = opts.batch_norm(conv)
+    logging.info("[Layer]\tConvolution:{}".format(conv))
+    return conv
 
 
-# 逆畳み込み層の計算グラフの定義
-def _deconv_variable(weight_shape, name="deconv"):
+def _conv_variable(weight_shape, name="conv"):
     with tf.compat.v1.variable_scope(name):
         # check weight_shape
         w = int(weight_shape[0])
         h = int(weight_shape[1])
-        output_channels = int(weight_shape[2])
-        input_channels = int(weight_shape[3])
+        input_channels = int(weight_shape[2])
+        output_channels = int(weight_shape[3])
         weight_shape = (w, h, input_channels, output_channels)
         # define variables
         weight = tf.compat.v1.get_variable(
@@ -84,6 +77,6 @@ def _deconv_variable(weight_shape, name="deconv"):
             ),
         )
         bias = tf.compat.v1.get_variable(
-            "b", [input_channels], initializer=tf.compat.v1.constant_initializer(0.0)
+            "b", [output_channels], initializer=tf.compat.v1.constant_initializer(0.0)
         )
     return weight, bias
