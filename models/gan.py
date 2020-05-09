@@ -299,6 +299,16 @@ class GAN(object):
         """
         self.writer.add_summary(summary, step)
 
+    def save(self, prefix):
+        """モデルを保存
+        学習結果を保存する
+
+        Args:
+            prefix (String):
+                保存するモデルに付与するPrefix
+        """
+        self.saver.save(self.sess, os.path.join(self.save_folder, "model.ckpt"), prefix)
+
     def create(self, noize, save_folder="", label=None):
         """
         学習モデルから画像の生成
