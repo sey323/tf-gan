@@ -41,6 +41,34 @@ def _load_image(file_name, img_size=None, gray=True, is_norm=True) -> np.ndarray
     return image
 
 
+def _create_label(label_len, label_idx, label_num) -> np.ndarray:
+    """
+    one_hot形式のラベルを作成する
+    Args
+        label_len (int):
+            ラベルの種類数。
+            このサイズの配列が宣言される。
+        label_idx (int):
+            ラベルの番号。
+        label_num (int):
+            このlabel_idxのラベルを幾つ作成するか
+    Returns
+        list:
+            one_hot形式のラベル
+    """
+    tmp_labels = np.empty((0, label_len), int)
+
+    # one_hot_vectorを作りラベルとして追加
+    label = np.zeros(label_len)
+    label[label_idx] = 1
+    for i in range(label_num):
+        tmp_labels = np.append(tmp_labels, [label], axis=0)
+
+    assert type(tmp_labels) == np.ndarray
+
+    return tmp_labels
+
+
 def make(folder_name, img_size, gray=False, separate=True) -> (np.ndarray, np.ndarray):
     """
     folder_name内の画像の配列とファイル名を返す
@@ -80,3 +108,48 @@ def make(folder_name, img_size, gray=False, separate=True) -> (np.ndarray, np.nd
 
     assert len(images) == len(file_names)
     return (images, file_names)
+
+
+
+def make_labels(
+    folder_name, img_size=[64, 64], gray=False, separate=False,
+) -> (np.ndarray, np.ndarray):
+    """
+    folder_name内にあるフォルダの画像を読み込んで画像とラベルを返す。
+
+    Args
+        folder_name (str):
+            読み込む画像のフォルダ名
+        img_size ([int, int]):
+            画像のファイルサイズ
+        gray (boolean):
+            グレイスケールに変換するかどうか
+        separate (boolean):
+            画像を分割するかどうか
+
+    Returns
+        list:
+            np配列の画像のリスト
+        list:
+            np配列のラベルのリスト
+    """
+    channel = 1 if gray else 3
+    classes = os.listdir(folder_name)
+
+    train_images, train_labels = (
+        np.empty((0, img_size[0], img_size[1], channel),),
+        np.empty((0, len(classes)), int),
+    )
+
+    # フォルダのディレクトリ=クラスとして扱う
+    for i, d in enumerate(classes):  # 1つのディレクトリに対する処理
+        # 画像とラベルを設定
+        tmp_images, _ = make(
+            folder_name + "/" + d, img_size, gray=gray, separate=separate
+        )
+        tmp_labels = _create_label(len(classes), i, len(tmp_images))
+
+        train_images = np.vstack([train_images, tmp_images])
+        train_labels = np.vstack([train_labels, tmp_labels])
+
+    return train_images, train_labels

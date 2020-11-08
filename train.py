@@ -1,9 +1,10 @@
 import tensorflow as tf
 import os
 
-from models.gan import GAN
+from models.GAN import GAN
+from models.cGAN import cGAN
 import common.dataset.imload as imload
-from common.dataset.batchgen import batchgen
+from common.dataset.Batchgen import Batchgen
 from common.dataset.Trainer import Trainer
 
 
@@ -11,7 +12,6 @@ def main(FLAGS):
     # パラメータの取得
     save_path = os.getenv("SAVE_FOLDER", "results")
 
-    """設定ファイルからパラメータの読み込み"""
     print("[LOADING]\tmodel parameters loding")
 
     # ファイルのパラメータ
@@ -21,31 +21,43 @@ def main(FLAGS):
     channel = 1 if gray else 3
 
     # GANのクラスに関するパラメータ
-    # type = FLAGS.type
+    type = FLAGS.type
     layers = [64, 128, 256, 256, 256, 256]
     max_epoch = FLAGS.max_epoch
     batch_num = FLAGS.batch_size
     save_folder = FLAGS.save_folder
     save_path = save_path + "/" + save_folder
 
-    """画像の読み込み"""
-    train_image, train_label = imload.make(
-        folder, img_size=resize, gray=gray,
-    )
-
-    """バッチの作成"""
-    batch = batchgen(train_image, train_label)
+    # 画像の読み込み
+    if type == "gan":
+        train_image, train_label = imload.make(
+            folder, img_size=resize, gray=gray,
+        )
+    elif type == "cgan":
+        train_image, train_label = imload.make_labels(
+            folder, img_size=resize, gray=gray,
+        )
+    # バッチの作成
+    batch = Batchgen(train_image, train_label)
 
     trainer = Trainer(batch_num=batch_num, max_epoch=max_epoch)
 
-    """モデルの作成"""
-    print("[LOADING]\tGAN")
-    gan = GAN(
-        input_size=resize, channel=channel, layers=layers, save_folder=save_path,
-    )
-
-    # 学習の開始
-    trainer.train(batch, gan)
+    # モデルの作成
+    if type == "gan":
+        print("[LOADING]\tGAN")
+        gan = GAN(
+            input_size=resize, channel=channel, layers=layers, save_folder=save_path,
+        )
+        # 学習の開始
+        trainer.train(batch, gan)
+    elif type == "cgan":
+        print("[LOADING]\tConditional GAN")
+        print(len(train_label))
+        cgan = cGAN(
+            input_size=resize, channel=channel, label_num=len(train_label[0]), layers=layers, save_folder=save_path,
+        )
+        # 学習の開始
+        trainer.train(batch, cgan, type="cgan")
 
 
 if __name__ == "__main__":
@@ -53,7 +65,7 @@ if __name__ == "__main__":
     FLAGS = flags.FLAGS
 
     # 実行するGANモデルの指定．
-    # flags.DEFINE_string("type", "gan", "Choice GAN type.")
+    flags.DEFINE_string("type", "gan", "Choice GAN type.")
 
     # 読み込む画像周り
     flags.DEFINE_string("folder", "", "Directory to put the training data.")

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class batchgen(object):
+class Batchgen:
     """バッチを生成するクラス
     与えられた画像とラベルの組み合わせからDeepLearningの学習バッチを作成する。
 

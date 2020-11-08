@@ -1,7 +1,6 @@
 import cv2
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 
 """
 GANによって生成された画像を表示など．
