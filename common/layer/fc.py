@@ -1,7 +1,7 @@
 import logging
 import tensorflow as tf
-import common.layer.activation as activation
-import common.layer.opts as opts
+from common.layer.activation import *
+from common.layer.opts import batch_norm as norm
 
 
 def fc(input, output_dim, name=None, batch_norm=False, save=False):
@@ -24,8 +24,8 @@ def fc(input, output_dim, name=None, batch_norm=False, save=False):
     if save:
         tf.compat.v1.summary.histogram(name, fc)
     if batch_norm:
-        fc = opts.batch_norm(fc)
-    logging.info("[Layer]\tFull Connection Layer:{}".format(fc))
+        fc = norm(fc)
+    logging.debug("\t\t[Layer]\tFull Connection Layer:{}".format(fc))
     return fc
 
 
@@ -33,7 +33,7 @@ def defc(
     input,
     output_shape,
     output_dim,
-    activation=activation.ReLU,
+    activation=ReLU,
     batch_norm=False,
     save=False,
     name="defc",
@@ -64,10 +64,10 @@ def defc(
     h_fc_a = activation(h_fc_r)
     defc = tf.reshape(h_fc_a, [-1, output_shape[0], output_shape[1], output_dim])
     if batch_norm:
-        defc = opts.batch_norm(defc)
+        defc = norm(defc)
     if save:
         tf.compat.v1.summary.histogram(name, defc)
-    logging.info("[Layer]\tDe Full Connection Layer:{}".format(defc))
+    logging.debug("\t\t[Layer]\tDe Full Connection Layer:{}".format(defc))
     return defc
 
 

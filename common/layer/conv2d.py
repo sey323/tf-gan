@@ -1,7 +1,7 @@
 import logging
 
 import tensorflow as tf
-import common.layer.opts as opts
+from common.layer.opts import batch_norm as norm
 
 
 def conv2d(
@@ -55,8 +55,8 @@ def conv2d(
     if save:
         tf.compat.v1.summary.histogram(layer_name, conv)
     if batch_norm:
-        conv = opts.batch_norm(conv)
-    logging.info("[Layer]\tConvolution:{}".format(conv))
+        conv = norm(conv)
+    logging.debug("\t\t[Layer]\tConvolution:{}".format(conv))
     return conv
 
 

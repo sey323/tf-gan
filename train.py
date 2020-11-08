@@ -2,9 +2,9 @@ import tensorflow as tf
 import os
 
 from models.gan import GAN
-import util.imload as imload
-from util.batchgen import batchgen
-from util.Trainer import Trainer
+import common.dataset.imload as imload
+from common.dataset.batchgen import batchgen
+from common.dataset.Trainer import Trainer
 
 
 def main(FLAGS):
@@ -17,7 +17,6 @@ def main(FLAGS):
     # ファイルのパラメータ
     folder = FLAGS.folder
     resize = [FLAGS.resize, FLAGS.resize]
-    file_num = FLAGS.file_num
     gray = FLAGS.gray
     channel = 1 if gray else 3
 
@@ -31,7 +30,7 @@ def main(FLAGS):
 
     """画像の読み込み"""
     train_image, train_label = imload.make(
-        folder, gray=gray, train_num=file_num, img_size=resize[0]
+        folder, img_size=resize, gray=gray,
     )
 
     """バッチの作成"""
@@ -59,7 +58,6 @@ if __name__ == "__main__":
     # 読み込む画像周り
     flags.DEFINE_string("folder", "", "Directory to put the training data.")
     flags.DEFINE_integer("resize", 64, "Size of Image.")
-    flags.DEFINE_integer("file_num", 0, "Loading Images Num.")
     flags.DEFINE_boolean("gray", False, "Convert Gray Scale?")
 
     # GANの学習パラメータ
