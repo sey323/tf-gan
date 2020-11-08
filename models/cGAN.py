@@ -20,7 +20,12 @@ class cGAN(GAN):
         input_size,
         channel,
         label_num,
-        layers=[64, 128, 256, 512,],
+        layers=[
+            64,
+            128,
+            256,
+            512,
+        ],
         filter_size=[5, 5],
         drop_prob=0.5,
         noise_dim=100,
@@ -43,9 +48,15 @@ class cGAN(GAN):
         self.number = 2
         self.name = "Conditional GANs"
 
-
     def ConditionalGenerator(
-        self, input, label, layers, output_shape, channel=3, filter_size=[3, 3], reuse=False
+        self,
+        input,
+        label,
+        layers,
+        output_shape,
+        channel=3,
+        filter_size=[3, 3],
+        reuse=False,
     ):
         """
         Generator
@@ -62,7 +73,6 @@ class cGAN(GAN):
 
         return output
 
-
     def ConditionalDiscriminator(
         self, input, label, layers, channel=3, filter_size=[3, 3], reuse=False, name=""
     ):
@@ -78,7 +88,12 @@ class cGAN(GAN):
                 scope.reuse_variables()
             label = tf.reshape(label, [-1, 1, 1, label_num])
             output_shape = tf.stack(
-                [tf.shape(input)[0], tf.shape(input)[1], tf.shape(input)[2], label_num,],
+                [
+                    tf.shape(input)[0],
+                    tf.shape(input)[1],
+                    tf.shape(input)[2],
+                    label_num,
+                ],
             )
             k = tf.ones(output_shape) * label
             concat_input = tf.concat([input, k], axis=3)
@@ -148,13 +163,19 @@ class cGAN(GAN):
         # 損失関数の定義
         logging.info("[BUILDING]\tLoss Function")
         self.d_loss_real = loss_function.cross_entropy(
-            x=self.d_real, labels=tf.ones_like(self.d_real), name="d_loss_real",
+            x=self.d_real,
+            labels=tf.ones_like(self.d_real),
+            name="d_loss_real",
         )
         self.d_loss_fake = loss_function.cross_entropy(
-            x=self.d_fake, labels=tf.zeros_like(self.d_fake), name="d_loss_fake",
+            x=self.d_fake,
+            labels=tf.zeros_like(self.d_fake),
+            name="d_loss_fake",
         )
         self.g_loss = loss_function.cross_entropy(
-            x=self.d_fake, labels=tf.ones_like(self.d_fake), name="g_loss",
+            x=self.d_fake,
+            labels=tf.ones_like(self.d_fake),
+            name="g_loss",
         )
         self.d_loss = self.d_loss_real + self.d_loss_fake
 
@@ -162,7 +183,6 @@ class cGAN(GAN):
         logging.info("[BUILDING]\tOptimizer")
         self.g_optimizer = optimizer.adam(self.g_loss, self.learn_rate, "Generator")
         self.d_optimizer = optimizer.adam(self.d_loss, self.learn_rate, "Discriminator")
-
 
     def update(self, batch_z, batch_images, batch_labels):
         _, d_loss, _, _, summary = self.sess.run(
@@ -178,5 +198,3 @@ class cGAN(GAN):
             feed_dict={self.z: batch_z, self.label: batch_labels},
         )
         return {"g_loss": g_loss, "d_loss": d_loss, "summary": summary}
-
-

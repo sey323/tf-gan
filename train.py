@@ -31,11 +31,15 @@ def main(FLAGS):
     # 画像の読み込み
     if type == "gan":
         train_image, train_label = imload.make(
-            folder, img_size=resize, gray=gray,
+            folder,
+            img_size=resize,
+            gray=gray,
         )
     elif type == "cgan":
         train_image, train_label = imload.make_labels(
-            folder, img_size=resize, gray=gray,
+            folder,
+            img_size=resize,
+            gray=gray,
         )
     # バッチの作成
     batch = Batchgen(train_image, train_label)
@@ -46,7 +50,10 @@ def main(FLAGS):
     if type == "gan":
         print("[LOADING]\tGAN")
         gan = GAN(
-            input_size=resize, channel=channel, layers=layers, save_folder=save_path,
+            input_size=resize,
+            channel=channel,
+            layers=layers,
+            save_folder=save_path,
         )
         # 学習の開始
         trainer.train(batch, gan)
@@ -54,7 +61,11 @@ def main(FLAGS):
         print("[LOADING]\tConditional GAN")
         print(len(train_label))
         cgan = cGAN(
-            input_size=resize, channel=channel, label_num=len(train_label[0]), layers=layers, save_folder=save_path,
+            input_size=resize,
+            channel=channel,
+            label_num=len(train_label[0]),
+            layers=layers,
+            save_folder=save_path,
         )
         # 学習の開始
         trainer.train(batch, cgan, type="cgan")

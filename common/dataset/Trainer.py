@@ -9,7 +9,9 @@ class Trainer:
     """
 
     def __init__(
-        self, batch_num=50, max_epoch=10000,
+        self,
+        batch_num=50,
+        max_epoch=10000,
     ):
         self.max_epoch = max_epoch
         self.batch_num = batch_num

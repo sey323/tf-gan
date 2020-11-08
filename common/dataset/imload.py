@@ -5,7 +5,6 @@ import numpy as np
 import cv2
 
 
-
 def _load_image(file_name, img_size=None, gray=True, is_norm=True) -> np.ndarray:
     """
     ファイル名から画像を読み込み
@@ -90,7 +89,12 @@ def make(folder_name, img_size, gray=False, separate=True) -> (np.ndarray, np.nd
             画像のファイル名のリスト
     """
     channel = 1 if gray else 3
-    images, file_names = np.empty((0, img_size[0], img_size[1], channel),), np.array([])
+    images, file_names = (
+        np.empty(
+            (0, img_size[0], img_size[1], channel),
+        ),
+        np.array([]),
+    )
 
     # フォルダ内のディレクトリの読み込み
     classes = os.listdir(folder_name)
@@ -110,9 +114,11 @@ def make(folder_name, img_size, gray=False, separate=True) -> (np.ndarray, np.nd
     return (images, file_names)
 
 
-
 def make_labels(
-    folder_name, img_size=[64, 64], gray=False, separate=False,
+    folder_name,
+    img_size=[64, 64],
+    gray=False,
+    separate=False,
 ) -> (np.ndarray, np.ndarray):
     """
     folder_name内にあるフォルダの画像を読み込んで画像とラベルを返す。
@@ -137,7 +143,9 @@ def make_labels(
     classes = os.listdir(folder_name)
 
     train_images, train_labels = (
-        np.empty((0, img_size[0], img_size[1], channel),),
+        np.empty(
+            (0, img_size[0], img_size[1], channel),
+        ),
         np.empty((0, len(classes)), int),
     )
 

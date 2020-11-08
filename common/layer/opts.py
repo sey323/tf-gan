@@ -16,7 +16,9 @@ def batch_norm(
     x               : input
     """
     return tf.keras.layers.BatchNormalization(
-        epsilon=epsilon, scale=scale, trainable=is_training,
+        epsilon=epsilon,
+        scale=scale,
+        trainable=is_training,
     )(x)
 
 

@@ -41,7 +41,8 @@ def conv2d(
 
     input_dim = input.shape[-1]
     conv_w, conv_b = _conv_variable(
-        [filter_size[0], filter_size[1], input_dim, output_dim], name=layer_name,
+        [filter_size[0], filter_size[1], input_dim, output_dim],
+        name=layer_name,
     )
     conv = (
         tf.nn.conv2d(

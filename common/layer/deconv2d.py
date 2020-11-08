@@ -42,10 +42,16 @@ def deconv2d(
 
     input_dim = input.get_shape()[-1]
     deconv_w, deconv_b = _deconv_variable(
-        [filter_size[0], filter_size[1], input_dim, output_dim], name=layer_name,
+        [filter_size[0], filter_size[1], input_dim, output_dim],
+        name=layer_name,
     )
     output_shape = tf.stack(
-        [tf.shape(input)[0], output_shape[0], output_shape[1], output_dim,],
+        [
+            tf.shape(input)[0],
+            output_shape[0],
+            output_shape[1],
+            output_dim,
+        ],
     )
     deconv = (
         tf.nn.conv2d_transpose(

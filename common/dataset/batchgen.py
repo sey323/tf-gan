@@ -8,7 +8,9 @@ class Batchgen:
     """
 
     def __init__(
-        self, image, label,
+        self,
+        image,
+        label,
     ):
         self.image = np.array(image)
         self.label = np.array(label)

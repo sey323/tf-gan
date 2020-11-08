@@ -25,7 +25,11 @@ class GAN(object):
         self,
         input_size,
         channel=3,
-        layers=[64, 128, 256,],
+        layers=[
+            64,
+            128,
+            256,
+        ],
         filter_size=[5, 5],
         drop_prob=0.5,
         noise_dim=100,
@@ -116,7 +120,10 @@ class GAN(object):
                 # 1層目
                 defc_1 = layer.defc(
                     input,
-                    output_shape=[dim_h, dim_w,],
+                    output_shape=[
+                        dim_h,
+                        dim_w,
+                    ],
                     output_dim=self.layers[-1],
                     name="defc",
                 )
@@ -225,14 +232,20 @@ class GAN(object):
         """損失関数の定義"""
         logging.info("[BUILDING]\tLoss Function")
         self.g_loss = loss_function.cross_entropy(
-            x=self.d_fake, labels=tf.ones_like(self.d_fake), name="g_loss_fake",
+            x=self.d_fake,
+            labels=tf.ones_like(self.d_fake),
+            name="g_loss_fake",
         )
 
         self.d_loss_real = loss_function.cross_entropy(
-            x=self.d_real, labels=tf.ones_like(self.d_real), name="d_loss_real",
+            x=self.d_real,
+            labels=tf.ones_like(self.d_real),
+            name="d_loss_real",
         )
         self.d_loss_fake = loss_function.cross_entropy(
-            x=self.d_fake, labels=tf.zeros_like(self.d_fake), name="d_loss_fake",
+            x=self.d_fake,
+            labels=tf.zeros_like(self.d_fake),
+            name="d_loss_fake",
         )
         self.d_loss = self.d_loss_real + self.d_loss_fake
 
